@@ -1,0 +1,4 @@
+portainer_data/
+database_data/
+*.log
+traefik/configs/custom_configs
