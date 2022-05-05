@@ -1,0 +1,61 @@
+version: "3.7"
+
+networks:
+    traefik:
+        name: traefik
+
+services:
+    traefik:
+        image: traefik:latest
+        container_name: traefik
+        restart: always
+        networks:
+            - traefik
+        ports:
+            - 80:80
+            - 3306:3306
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - ./traefik/traefik.yaml:/etc/traefik/traefik.yaml
+            - ./traefik/configs:/configs
+        labels:
+            - traefik.http.routers.traefik.rule=Host(`traefik.localhost`)
+            - traefik.http.services.traefik.loadbalancer.server.port=8080
+
+    portainer:
+        image: portainer/portainer-ce
+        container_name: portainer
+        restart: always
+        networks:
+            - traefik
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - ./portainer_data:/data
+        labels:
+            - traefik.http.routers.portainer.rule=Host(`portainer.localhost`)
+            - traefik.http.services.portainer.loadbalancer.server.port=9000
+
+    mailhog:
+        image: mailhog/mailhog
+        container_name: mailhog
+        restart: always
+        networks:
+            - traefik
+        labels:
+            - traefik.http.routers.mailhog.rule=Host(`mailhog.localhost`)
+            - traefik.http.services.mailhog.loadbalancer.server.port=8025
+
+    local_database:
+        image: mariadb:10.1.48
+        container_name: main_local_database
+        restart: always
+        environment:
+            - MYSQL_ROOT_PASSWORD=secret
+        volumes:
+            - ./database_data:/var/lib/mysql
+        networks:
+            - traefik
+        labels:
+            - traefik.tcp.routers.localdatabase.rule=HostSNI(`*`)
+            - traefik.tcp.routers.localdatabase.entrypoints=mysql
+            - traefik.tcp.services.localdatabase.loadbalancer.server.port=3306
