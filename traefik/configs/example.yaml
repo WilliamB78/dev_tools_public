@@ -1,0 +1,22 @@
+# http:
+#     routers:
+#         example:
+#             rule: "Host(`example.localhost`)"
+#             service: example
+#     services:
+#         example:
+#             loadBalancer:
+#                 servers:
+#                     - url: "http://example:8080"
+# tcp:
+#     routers:
+#         mysql:
+#             entryPoints:
+#                 - "mysql"
+#             rule: "HostSNI(`*`)"
+#             service: "mysql"
+#     services:
+#         mysql:
+#             loadBalancer:
+#                 servers:
+#                     - address: "example_container_name:3306"
